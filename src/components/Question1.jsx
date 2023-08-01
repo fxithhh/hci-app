@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@mantine/core';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {MdOutlineArrowBackIos} from 'react-icons/md'
 
 const Question1 = ({ onNextClick, onBackClick }) => {
 
@@ -106,7 +107,9 @@ const Question1 = ({ onNextClick, onBackClick }) => {
     <div className="w-full flex flex-col items-start my-8">
       {/* Content for Question 1 */}
       <div className="font-bold mx-10 mt-2 text-left flex flex-col">
-        <div className='font-semibold underline text-lg mb-2' onClick={() => onBackClick()} >Back</div>
+        <div className="mb-2"> {/* Add this div container */}
+          <MdOutlineArrowBackIos className='text-xl text-left' onClick={onBackClick} />
+        </div>
         <span className="text-brand-blue text-xl">Question 1</span>
         <span className='text-gray-800 text-4xl font-bold mt-4 leading-9'>Rank these factors when searching for a parking lot.</span>
       </div>

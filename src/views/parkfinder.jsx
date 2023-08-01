@@ -95,7 +95,7 @@ const ParkFinder = () => {
           {/* Kelvin Problem with text upon clicking the button */}
           <input
             type="text"
-            placeholder= "Search..."
+            placeholder= "Search Parkfinder "
             className="w-full py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
             id = "search_box"
             value={searchText}
