@@ -4,6 +4,8 @@ import Drawer from '../components/drawer';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaSearch } from 'react-icons/fa';
+import axios from 'axios'; // Import axios library
+import carparkData from '../assets/carpark_final.json'; // Import carpark data directly
 
 
 
@@ -13,8 +15,8 @@ const ParkFinder = () => {
   const [user_latitude, setUserLatitude] = useState(null);
   const [user_longitude, setUserLongitude] = useState(null);
   const isLocationAvailable = user_latitude !== null && user_longitude !== null;
-
   const trigger_search = useRef(true);
+
 
   useEffect(() => {
     if (warnState) {
@@ -36,6 +38,7 @@ const ParkFinder = () => {
           const { latitude, longitude } = position.coords;
           setUserLatitude(latitude);
           setUserLongitude(longitude);
+          console.log("Carpark Data:",carparkData);
           console.log(`latitude is ${user_latitude}, longitude is ${user_longitude}`);
         },
         (error) => {
@@ -110,7 +113,7 @@ const ParkFinder = () => {
       </div>
       <ToastContainer />
       {/* This ensures the user coords are available before loading */}
-      {isLocationAvailable && (
+      {isLocationAvailable  &&(
         <Map user_latitude={user_latitude} user_longitude={user_longitude} search_text={searchText} ref = {trigger_search}/>
       )}
     </div>
