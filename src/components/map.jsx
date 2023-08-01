@@ -5,8 +5,7 @@ import { IconContext } from 'react-icons';
 import { renderToString } from 'react-dom/server';
 import { useGoogleMapsLoader } from './googleMapsConfig';
 
-const Map = forwardRef(({user_latitude,user_longitude,search_text} , ref) => {
-
+const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,chosen_carpark} ,ref) => {
     const [autocompleteService, setAutocompleteService] = useState(null);
     const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
     const [map, setMap] = useState(null);
@@ -90,10 +89,12 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text} , ref) => {
     
                 const local_target_coords = `${target_latitude}, ${target_longitude}`;
                 setTargetCoords(local_target_coords);
+                
     
                 const local_relevant = {
                     name: firstResult.name,
-                    location: firstResult.formatted_address
+                    location: firstResult.formatted_address,
+                    image_src: firstResult.photos[0].getUrl()
                 };
     
                 setTargetRelevantDetails(local_relevant);
@@ -191,7 +192,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text} , ref) => {
     };
 
     // marker styling
-    const user_marker = [
+    let user_marker = [
 
         // User Starting Position
         { position: { lat: user_latitude, lng: user_longitude }, color: '#FF9933', label: 'You are here' },// you are here
@@ -218,7 +219,6 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text} , ref) => {
         map.fitBounds(bounds);
         console.log("map loaded")
         setMap(map)
-        setCarparksFound(true)
     }, [isLoaded,map,user_marker])
 
     const onUnmount = useCallback(function callback(map) {
@@ -231,7 +231,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text} , ref) => {
         setSelectedMarker(marker);
     };
 
-    return isLoaded ? (
+    return isLoaded && user_marker ?(
         <GoogleMap
             mapContainerStyle={containerStyle}
             options={mapOptions}

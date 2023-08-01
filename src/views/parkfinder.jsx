@@ -12,11 +12,13 @@ import carparkData from '../assets/carpark_final.json'; // Import carpark data d
 const ParkFinder = () => {
   // warning state
   const warnState = false;
-  const [user_latitude, setUserLatitude] = useState(null);
-  const [user_longitude, setUserLongitude] = useState(null);
-  const isLocationAvailable = user_latitude !== null && user_longitude !== null;
-  const trigger_search = useRef(true);
-
+  const [user_latitude, setUserLatitude] = useState(null)
+  const [user_longitude, setUserLongitude] = useState(null)
+  const isLocationAvailable = user_latitude !== null && user_longitude !== null
+  const [searchText, setSearchText] = useState('')
+  const [carpark_dict,setCarparkDict] = useState(null) //carpark details of all carparks
+  const [chosen_carpark,setChosenCarpark] = useState(null)  //chosen carpark
+  const trigger_search = useRef() //trigger navigation
 
   useEffect(() => {
     if (warnState) {
@@ -50,12 +52,11 @@ const ParkFinder = () => {
     }
     
     
-  }, [warnState, user_latitude, user_longitude]); // these will load first 
+  }, [warnState, user_latitude, user_longitude,chosen_carpark]); // these will load first 
 
   // Get user target location
 
-  const [searchText, setSearchText] = useState('');
-
+  
   const handleInputChange = (event) => {
     setSearchText(event.target.value);
   };
@@ -79,13 +80,14 @@ const ParkFinder = () => {
       console.log("Children component called")
     }
   };
-    
+  
+
 
   return (
     <div>
       {/* Drawer & Bottom Bar */}
       <div className="fixed bottom-0 w-full z-20">
-        <Drawer/>
+        <Drawer user_destination={searchText} navigate_to_place={chosen_carpark}/>
       </div>
 
 
@@ -113,8 +115,9 @@ const ParkFinder = () => {
       </div>
       <ToastContainer />
       {/* This ensures the user coords are available before loading */}
-      {isLocationAvailable  &&(
-        <Map user_latitude={user_latitude} user_longitude={user_longitude} search_text={searchText} ref = {trigger_search}/>
+      {isLocationAvailable && (
+        <Map user_latitude={user_latitude} user_longitude={user_longitude} search_text={searchText} carpark_dict = {carpark_dict} chosen_carpark={chosen_carpark} ref = {trigger_search} />
+
       )}
     </div>
   );
