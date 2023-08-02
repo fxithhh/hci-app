@@ -295,7 +295,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
                         <div className='my-4'>
                             <img className='rounded-lg h-40 w-full' src={selectedCarpark.image_src !== null ? selectedCarpark.image_src : "../assets/carpark1.jpeg"} alt="Carpark"></img>
                             <div>
-                                <h2 className='font-bold text-3xl mt-4 leading-tight'>{selectedCarpark.label}</h2>
+                                <h2 className='font-bold text-3xl mt-4 leading-tight'>{selectedCarpark.location}</h2>
                                 <div className='flex items-center mb-2'>
                                     <h5 className='font-semibold text-brand-blue my-4 text-lg mr-2'>I want to reach:</h5>
                                     <select className='bg-white border-b-2 border-brand-blue rounded-sm text-md text-brand-blue focus:outline-none font-semibold' onChange={(e) => handlePriceSort(e.target.value)}>
