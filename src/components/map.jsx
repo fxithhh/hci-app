@@ -4,6 +4,8 @@ import { FaMapMarkerAlt } from 'react-icons/fa';
 import { IconContext } from 'react-icons';
 import { renderToString } from 'react-dom/server';
 import { useGoogleMapsLoader } from './googleMapsConfig';
+import axios from 'axios'; // Import axios library
+import carparkData from '../assets/carpark_final.json'; // Import carpark data directly
 
 const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,chosen_carpark} ,ref) => {
     const [autocompleteService, setAutocompleteService] = useState(null);
@@ -16,6 +18,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     const [carparks_found, setCarparksFound] = useState(false); //Kelvin to load map DOM
     const [navigation_in_progress , setNavigationInProgress] = useState(false)
     let [directionsRenderer, setDirectionsRenderer] = useState(null)
+    let [index_carpark_list , setIndexCarparkList] = useState(null)
     // API keys
     // const { isLoaded,loadError } = useJsApiLoader({
     //     id: 'google-map-script',
@@ -43,8 +46,12 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
             plotNavigationPath()
             setNavigationInProgress(true)
         }
+        if (carparks_found){
+            //code to update navigation
 
-    }, [isLoaded,loadError,target_coords,target_relevant_details]); 
+        }
+
+    }, [isLoaded,loadError,target_coords,target_relevant_details,carparks_found]); 
 
     // Kelvin expose function to the parent component to call it on button press
     useImperativeHandle(ref, () => ({
@@ -87,17 +94,26 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
                 console.log("Latitude:", target_latitude);
                 console.log("Longitude:", target_longitude);
     
-                const local_target_coords = `${target_latitude}, ${target_longitude}`;
+                const local_target_coords = `${target_latitude},${target_longitude}`;
+                // Add to the markers if valid
+                user_marker.splice(1,0,{ position: { lat: target_latitude, lng: target_longitude }, color: '#E60000', label: firstResult.name })
+                console.log("user marker is ",user_marker)
                 setTargetCoords(local_target_coords);
-                
-    
                 const local_relevant = {
                     name: firstResult.name,
                     location: firstResult.formatted_address,
-                    image_src: firstResult.photos[0].getUrl()
+                    image_src: firstResult.photos && firstResult.photos.length > 0 ? firstResult.photos[0].getUrl(): null
                 };
     
                 setTargetRelevantDetails(local_relevant);
+                // Append map distance
+                get_map_distance(carparkData,local_target_coords)
+                carparkData.sort((a, b) => a.distance_from_target - b.distance_from_target);
+                console.log("Calcuated distance and sorte df" , carparkData)
+
+                // shortlist top 10
+                carpark_info_search(carparkData.slice(0,10))
+                
             } else {
                 // Handle the error or empty results
                 console.log('No results found or an error occurred.');
@@ -106,6 +122,92 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
             }
         });
     };
+
+    function get_map_distance(carpark_list,target_location){
+      // target_location format as float,float
+      // compares all carpark using the distance function and appends it as a new key to each list
+      for (let i =0 ; i<carpark_list.length; i++){
+        const ref_carpark = carpark_list[i]
+        //ref_carpark coordinate is [lat,lng]
+        const dist = get_dist_from_coords(ref_carpark.coordinates , target_location)
+        ref_carpark["distance_from_target"] = dist
+      }
+    }
+    //helper to get map dist
+    function get_dist_from_coords(ref_carpark_coords , target_location_coords){
+      const target_lat = parseFloat(target_location_coords.split(",")[0]);
+      const target_lng = parseFloat(target_location_coords.split(",")[1]);
+      const ref_carpark_lat = parseFloat(ref_carpark_coords[0]);
+      const ref_carpark_lng = parseFloat(ref_carpark_coords[1]);
+      // This map dist represents the approximate distance for each deviation in coordinates in km
+      const reference_map_dist = 111.32
+      // Calculate L2 distance
+      const distance = Math.sqrt(
+        Math.pow(target_lat - ref_carpark_lat, 2) +
+        Math.pow(target_lng - ref_carpark_lng, 2)
+      ) * reference_map_dist ;
+      return distance;
+    }
+
+    async function carpark_info_search(carpark_list) {
+      const return_list = [];
+      console.log("Searching for carpark details")
+    
+      for (let i = 0; i < carpark_list.length; i++) {
+        const this_carpark = carpark_list[i];
+    
+        try {
+          const result = await searchCarparkInfo(this_carpark);
+          if (result) {
+            return_list.push(result);
+          } else {
+            console.log(`No details found for ${this_carpark.carparkName}`);
+          }
+        } catch (error) {
+          console.error(`Error occurred while searching for ${this_carpark.carparkName}:`, error);
+        }
+      }
+      console.log("Data for carparks is " , return_list)
+      await setIndexCarparkList(return_list)
+      await setCarparksFound(true) // trigger carparksfound to populate the fields
+      return return_list;
+    }
+    
+    async function searchCarparkInfo(this_carpark) {
+      return new Promise((resolve, reject) => {
+        const request = {
+          query: `${this_carpark.coordinates[0]},${this_carpark.coordinates[1]}`,
+          fields: ['name', 'geometry', 'photos'],
+          language: 'en-US',
+          maxResults: 1,
+          region: 'sg',
+          strictBounds: true,
+        };
+    
+        const service = new window.google.maps.places.PlacesService(map);
+        service.textSearch(request, (results, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+            const firstResult = results[0];
+            const target_latitude = firstResult.geometry.location.lat();
+            const target_longitude = firstResult.geometry.location.lng();
+            // const local_target_coords = `${target_latitude}, ${target_longitude}`;
+            const local_relevant = {
+              label: this_carpark.carparkName,
+              location: firstResult.formatted_address,
+              image_src: firstResult.photos && firstResult.photos.length > 0 ? firstResult.photos[0].getUrl() : null,
+              position: {lat: target_latitude , lng:target_longitude},
+              color: '#0050E6' // not selected
+            };
+            console.log("Searched" , this_carpark.carparkName)
+            // resolve(local_relevant)
+            resolve(local_relevant);
+          } else {
+            console.log("Failed to search" , this_carpark.carparkName)
+            resolve(null); // No results found or an error occurred.
+          }
+        });
+      });
+    }
     
     
     async function plotNavigationPath() {
@@ -196,19 +298,10 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
 
         // User Starting Position
         { position: { lat: user_latitude, lng: user_longitude }, color: '#FF9933', label: 'You are here' },// you are here
-
-
-        // Carpark Positions
-        { position: { lat: 1.3433019907805732, lng: 103.96416792617076 }, color: '#0050E6', label: 'SUTD Hostel' }, //sutd hostel
-        { position: { lat: 1.341707516705738, lng: 103.96514557439521 }, color: '#0050E6', label: 'SUTD Sports and Recreation Centre' }, //sutd recreation
-        { position: { lat: 1.341435444980101, lng: 103.9650531473447 }, color: '#0050E6', label: 'SUTD Running Track' } ,//sutd running
-
-
-        // Target Position
-        { position: { lat: 1.3413, lng: 103.9638 }, color: '#E60000', label: 'SUTD' }, // sutd
+        // { position: { lat: 1.3433019907805732, lng: 103.96416792617076 }, color: '#0050E6', label: 'SUTD Hostel' }, //sutd hostel
 
     ];
-
+    
     
 
     
