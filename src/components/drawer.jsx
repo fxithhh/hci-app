@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,8 +17,40 @@ import { BsPeople, BsFillPinMapFill, BsPersonCircle } from "react-icons/bs"
 import { IoIosArrowBack } from "react-icons/io"
 import { AiOutlineCar } from "react-icons/ai"
 
-const Drawer = ({user_destination , navigate_to_place}) => {
+const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
+    // data about different carparks
+    // crowd: 0-3 empty, 4-6 moderate, 7-9 busy, 9-12 very busy 
+    // This is the final display state
+    const [carparkInfo, setCarparkInfo] = useState([
+        // { img: Carpark1, name: 'SUTD Hostel', distance: 1.2, price: 3, crowd: "Empty" , image_url: "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAaw_FcKCRl0R1YDPszjG3FTuc8BoV0JWHwBi19Df6Vo23gh1GWlJ4-uqTOgMxS5NfOZFKQyXsg7l26t1uKaZgPxqG7bhf2iNycekxhngCwyXsSwYoPObmKh6srlTB2AikSMr96OHt8scLotEU30Vj2O_GJnvxzP_S4vLrKlojDAj5ylXghgE&3u4032&5m1&2e1&callback=none&key=AIzaSyAhY1RECYWhzJtChjr0iNIAV5NUFlljv9g&token=127467"    },
+        // { img: Carpark2, name: 'SUTD Sports and Recreation Centre Carpark', distance: 1, price: 2, crowd: 1 },
+        // { img: Carpark3, name: 'SUTD Running Track', distance: 2.1, price: 1.5, crowd: 5 },
+        // { img: Carpark4, name: 'Changi Court', distance: 3.27, price: 4, crowd: 2 },
+        // { img: Carpark5, name: 'Changi City Point', distance: 2, price: 4, crowd: 12 },
+        // { img: Carpark6, name: 'Singapore University of Technology & Design', distance: 0, price: 3, crowd: 8 },
+    ]);
+
+    // default state input from jia sheng
+    // [{name: "" , distance: int , price: int, crowd: str}]
+    let originalCarparkInfo = [
+        { img: Carpark1, name: 'SUTD Hostel', distance: 1.2, price: 3, crowd: 10 },
+        { img: Carpark2, name: 'SUTD Sports and Recreation Centre Carpark', distance: 1, price: 2, crowd: 1 },
+        { img: Carpark3, name: 'SUTD Running Track', distance: 2.1, price: 1.5, crowd: 5 },
+        { img: Carpark4, name: 'Changi Court', distance: 1.2, price: 3, crowd: 10 },
+        { img: Carpark5, name: 'Changi City Point', distance: 2, price: 4, crowd: 12 },
+        { img: Carpark6, name: 'Singapore University of Technology & Design', distance: 0, price: 3, crowd: 8 },
+    ];
+    const [reloadDrawer, setReloadDrawer] = useState(false)
     // toggle state
+    useEffect(() => {
+        // Code to run when the component mounts (equivalent to componentDidMount)
+        if (carpark_list != null){
+            changecarparkinfo(carpark_list)
+            console.log("changed Carpark info as follows:" , carparkInfo)
+            setReloadDrawer((prev) => !prev);
+        }
+      }, [carpark_list,carparkInfo,user_destination]); //if carpark_list changes, parse it
+
     const [toggle, setToggle] = useState({
         bottom: false,
         loadedRows: 3
@@ -70,29 +102,12 @@ const Drawer = ({user_destination , navigate_to_place}) => {
             boxShadow: 'none',
         },
     };
+    function changecarparkinfo(carpark_list){
+        originalCarparkInfo=carpark_list
+        setCarparkInfo(carpark_list)
+    }
 
-    // data about different carparks
-    // crowd: 0-3 empty, 4-6 moderate, 7-9 busy, 9-12 very busy 
-    // This is the final display state
-    const [carparkInfo, setCarparkInfo] = useState([
-        { img: Carpark1, name: 'SUTD Hostel', distance: 1.2, price: 3, crowd: 10,crowd_level:"Empty" , image_url: "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAaw_FcKCRl0R1YDPszjG3FTuc8BoV0JWHwBi19Df6Vo23gh1GWlJ4-uqTOgMxS5NfOZFKQyXsg7l26t1uKaZgPxqG7bhf2iNycekxhngCwyXsSwYoPObmKh6srlTB2AikSMr96OHt8scLotEU30Vj2O_GJnvxzP_S4vLrKlojDAj5ylXghgE&3u4032&5m1&2e1&callback=none&key=AIzaSyAhY1RECYWhzJtChjr0iNIAV5NUFlljv9g&token=127467"    },
-        { img: Carpark2, name: 'SUTD Sports and Recreation Centre Carpark', distance: 1, price: 2, crowd: 1 },
-        { img: Carpark3, name: 'SUTD Running Track', distance: 2.1, price: 1.5, crowd: 5 },
-        { img: Carpark4, name: 'Changi Court', distance: 3.27, price: 4, crowd: 2 },
-        { img: Carpark5, name: 'Changi City Point', distance: 2, price: 4, crowd: 12 },
-        { img: Carpark6, name: 'Singapore University of Technology & Design', distance: 0, price: 3, crowd: 8 },
-    ]);
-
-    // default state input from jia sheng
-    // [{name: "" , distance: int , price: int, crowd_level: str}]
-    const originalCarparkInfo = [
-        { img: Carpark1, name: 'SUTD Hostel', distance: 1.2, price: 3, crowd: 10 },
-        { img: Carpark2, name: 'SUTD Sports and Recreation Centre Carpark', distance: 1, price: 2, crowd: 1 },
-        { img: Carpark3, name: 'SUTD Running Track', distance: 2.1, price: 1.5, crowd: 5 },
-        { img: Carpark4, name: 'Changi Court', distance: 1.2, price: 3, crowd: 10 },
-        { img: Carpark5, name: 'Changi City Point', distance: 2, price: 4, crowd: 12 },
-        { img: Carpark6, name: 'Singapore University of Technology & Design', distance: 0, price: 3, crowd: 8 },
-    ];
+    
 
     // sorting
     const handleSort = (property) => {
@@ -128,10 +143,11 @@ const Drawer = ({user_destination , navigate_to_place}) => {
             setSelectedCarpark(null);
         } else {
             // Find the selected carpark in the carparkInfo array
-            const selectedCarpark = carparkInfo.find((carpark) => carpark.name === carparkName);
+            const selectedCarpark = carparkInfo.find((carpark) => carpark.label === carparkName);
 
             // Set the selected carpark as the active carpark for Page 2
             setSelectedCarpark(selectedCarpark);
+            console.log("selected carpark from user preferenc is " ,selectedCarpark)
             setActivePage('page2');
         }
     };
@@ -144,6 +160,7 @@ const Drawer = ({user_destination , navigate_to_place}) => {
       };
     const navigate_to_carpark = () =>{
         // perform navigation call to google maps 
+        setchosenCarpark(selectedCarpark)
     }
 
     return (
@@ -161,6 +178,7 @@ const Drawer = ({user_destination , navigate_to_place}) => {
             </div>
 
             <SwipeableDrawer
+                key={reloadDrawer}
                 anchor={anchor}
                 open={toggle[anchor]}
                 onClose={toggleDrawer(anchor, false)}
@@ -202,11 +220,11 @@ const Drawer = ({user_destination , navigate_to_place}) => {
                             {/* Parking Options */}
                             {carparkInfo.slice(0, toggle.loadedRows).map((row, index) => {
                                 return (
-                                    <div key={index} className="flex py-4 px-8 hover:bg-gray-100 focus:bg-gray-200 border-b-2 border-gray-300" onClick={() => handlePageChange(row.name)} >
+                                    <div key={index} className="flex py-4 px-8 hover:bg-gray-100 focus:bg-gray-200 border-b-2 border-gray-300" onClick={() => handlePageChange(row.label)} >
                                         <div className="w-2/5 h-28 pr-4">
                                             <img className='w-full h-full object-cover rounded-lg' 
-                                                src={row.image_url}
-                                                alt={row.name}
+                                                src={row.image_src!== null ? row.image_src : Carpark1}
+                                                alt={row.label}
                                                 onError={(e) => console.log('Error loading image:', e)} />
                                         </div>
                                         <div className="w-3/5">
@@ -217,7 +235,7 @@ const Drawer = ({user_destination , navigate_to_place}) => {
                                                     <LiaWalkingSolid className="text-lg mr-1" />
                                                     <p className="text-sm font-semibold">Walking Time</p>
                                                 </div>
-                                                <p className='font-semibold text-brand-dark-blue text-sm'>{row.distance * 10 } mins</p>
+                                                <p className='font-semibold text-brand-dark-blue text-sm'>{(row.distance * 10).toFixed(0) } mins</p>
                                             </div>
                                             {/* price */}
                                             <div className='flex mb-1'>
@@ -235,13 +253,13 @@ const Drawer = ({user_destination , navigate_to_place}) => {
                                                 </div>
                                                 <div>
                                                 <p className={
-                                                    row.crowd_level === "Empty" ? 'font-semibold text-brand-green text-sm' :
-                                                    row.crowd_level === "Moderate" ? 'font-semibold text-yellow-500 text-sm' :
-                                                    row.crowd_level === "Busy" ? 'font-semibold text-brand-orange text-sm' :
-                                                    row.crowd_level === "Very Busy" ? 'font-semibold text-brand-red text-sm' :
+                                                    row.crowd === "Empty" ? 'font-semibold text-brand-green text-sm' :
+                                                    row.crowd === "Moderate" ? 'font-semibold text-yellow-500 text-sm' :
+                                                    row.crowd === "Busy" ? 'font-semibold text-brand-orange text-sm' :
+                                                    row.crowd === "Very Busy" ? 'font-semibold text-brand-red text-sm' :
                                                     'font-semibold text-brand-black text-sm'
                                                 }>
-                                                    {row.crowd_level}
+                                                    {row.crowd}
                                                 </p>
                                                 </div>
                                             </div>
@@ -275,9 +293,9 @@ const Drawer = ({user_destination , navigate_to_place}) => {
 
                         {/* detailed carpark info */}
                         <div className='my-4'>
-                            <img className='rounded-lg h-40 w-full' src={selectedCarpark.img}></img>
+                            <img className='rounded-lg h-40 w-full' src={selectedCarpark.image_src !== null ? selectedCarpark.image_src : "../assets/carpark1.jpeg"} alt="Carpark"></img>
                             <div>
-                                <h2 className='font-bold text-3xl mt-4 leading-tight'>{selectedCarpark.name}</h2>
+                                <h2 className='font-bold text-3xl mt-4 leading-tight'>{selectedCarpark.label}</h2>
                                 <div className='flex items-center mb-2'>
                                     <h5 className='font-semibold text-brand-blue my-4 text-lg mr-2'>I want to reach:</h5>
                                     <select className='bg-white border-b-2 border-brand-blue rounded-sm text-md text-brand-blue focus:outline-none font-semibold' onChange={(e) => handlePriceSort(e.target.value)}>
@@ -295,16 +313,16 @@ const Drawer = ({user_destination , navigate_to_place}) => {
                                         <LiaMapMarkerSolid className="text-xl mr-1" />
                                         <p className="text-md font-semibold">Distance</p>
                                     </div>
-                                    <p className='font-semibold text-brand-dark-blue text-md'>{selectedCarpark.distance}km</p>
+                                    <p className='font-semibold text-brand-dark-blue text-md'>{selectedCarpark.distance.toFixed(2)}km</p>
                                 </div>
                                 {/* walking distance */}
                                 
                                 <div className='flex mb-2'>
                                     <div className="w-1/2 flex items-center mr-4 text-brand-gray">
                                         <LiaWalkingSolid className="text-xl mr-1" />
-                                        <p className="text-md font-semibold">Walking Distance</p>
+                                        <p className="text-md font-semibold">Walking Time</p>
                                     </div>
-                                    <p className='font-semibold text-brand-dark-blue text-md'>{selectedCarpark.distance * 10 }mins</p>
+                                    <p className='font-semibold text-brand-dark-blue text-md'>{(selectedCarpark.distance * 10).toFixed(0) }mins</p>
                                 </div>
                                 {/* price */}
                                 <div className='flex mb-2'>
@@ -324,19 +342,21 @@ const Drawer = ({user_destination , navigate_to_place}) => {
                                         <p className="text-md font-semibold">Crowd</p>
                                     </div>
                                     <p className={
-                                                    selectedCarpark.crowd_level === "Empty" ? 'font-semibold text-brand-green text-sm' :
-                                                    selectedCarpark.crowd_level === "Moderate" ? 'font-semibold text-yellow-500 text-sm' :
-                                                    selectedCarpark.crowd_level === "Busy" ? 'font-semibold text-brand-orange text-sm' :
-                                                    selectedCarpark.crowd_level === "Very Busy" ? 'font-semibold text-brand-red text-sm' :
+                                                    selectedCarpark.crowd == "Empty" ? 'font-semibold text-brand-green text-sm' :
+                                                    selectedCarpark.crowd == "Moderate" ? 'font-semibold text-yellow-500 text-sm' :
+                                                    selectedCarpark.crowd == "Busy" ? 'font-semibold text-brand-orange text-sm' :
+                                                    selectedCarpark.crowd == "Very Busy" ? 'font-semibold text-brand-red text-sm' :
                                                     'font-semibold text-brand-black text-sm'
                                                 }>
-                                                    {selectedCarpark.crowd_level}
+                                                    {selectedCarpark.crowd}
                                                 </p>
                                 </div>
                             </div>
 
                             <div className='mt-6 w-full text-center'>
-                                <button className='bg-brand-green text-white w-full py-2 rounded-lg font-semibold text-lg' id="navigate_btn" onClick={navigate_to_carpark()}>
+                                <button className='bg-brand-green text-white w-full py-2 rounded-lg font-semibold text-lg' 
+                                id="navigate_btn" 
+                                onClick={() => {navigate_to_carpark(); toggleDrawer(anchor, false)}}>
                                     Navigate
                                 </button>
                             </div>

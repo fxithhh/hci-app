@@ -7,7 +7,7 @@ import { useGoogleMapsLoader } from './googleMapsConfig';
 import axios from 'axios'; // Import axios library
 import carparkData from '../assets/carpark_final.json'; // Import carpark data directly
 
-const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,chosen_carpark} ,ref) => {
+const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,chosen_carpark,carpark_list_change} ,ref) => {
     const [autocompleteService, setAutocompleteService] = useState(null);
     const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
     const [map, setMap] = useState(null);
@@ -37,21 +37,17 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         console.log("Updated target_coords:", target_coords);
         console.log("Updated details" ,  target_relevant_details)
 
-        if (navigation_in_progress && target_coords != null) {
+        if (navigation_in_progress && target_coords != null && chosen_carpark != null) {
             console.log("Clearing preexisting path")
             clearNavigationPath()
             plotNavigationPath()
         } 
-        if (!navigation_in_progress && target_coords!= null){
+        if (!navigation_in_progress && target_coords!= null && chosen_carpark != null){
+            console.log("Initiating Path finding ")
             plotNavigationPath()
             setNavigationInProgress(true)
         }
-        if (carparks_found){
-            //code to update navigation
-
-        }
-
-    }, [isLoaded,loadError,target_coords,target_relevant_details,carparks_found]); 
+    }, [isLoaded,loadError,target_coords,target_relevant_details,carparks_found,chosen_carpark]); 
 
     // Kelvin expose function to the parent component to call it on button press
     useImperativeHandle(ref, () => ({
@@ -109,10 +105,12 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
                 // Append map distance
                 get_map_distance(carparkData,local_target_coords)
                 carparkData.sort((a, b) => a.distance_from_target - b.distance_from_target);
-                console.log("Calcuated distance and sorte df" , carparkData)
+                console.log("Calcuated distance and sorted df" , carparkData)
 
                 // shortlist top 10
-                carpark_info_search(carparkData.slice(0,10))
+                const shortlist = carparkData.slice(0,10)
+                carpark_info_search(shortlist)
+                
                 
             } else {
                 // Handle the error or empty results
@@ -122,6 +120,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
             }
         });
     };
+
 
     function get_map_distance(carpark_list,target_location){
       // target_location format as float,float
@@ -133,6 +132,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         ref_carpark["distance_from_target"] = dist
       }
     }
+
     //helper to get map dist
     function get_dist_from_coords(ref_carpark_coords , target_location_coords){
       const target_lat = parseFloat(target_location_coords.split(",")[0]);
@@ -148,32 +148,45 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
       ) * reference_map_dist ;
       return distance;
     }
-
-    async function carpark_info_search(carpark_list) {
-      const return_list = [];
-      console.log("Searching for carpark details")
+  
+    function carpark_info_search(carpark_list) {
+      return new Promise((resolve, reject) => {
+        const return_list = [];
+        console.log("Searching for carpark details");
     
-      for (let i = 0; i < carpark_list.length; i++) {
-        const this_carpark = carpark_list[i];
+        let promises = [];
     
-        try {
-          const result = await searchCarparkInfo(this_carpark);
-          if (result) {
-            return_list.push(result);
-          } else {
-            console.log(`No details found for ${this_carpark.carparkName}`);
-          }
-        } catch (error) {
-          console.error(`Error occurred while searching for ${this_carpark.carparkName}:`, error);
+        for (let i = 0; i < carpark_list.length; i++) {
+          const this_carpark = carpark_list[i];
+          const promise = searchCarparkInfo(this_carpark);
+          promises.push(promise);
         }
-      }
-      console.log("Data for carparks is " , return_list)
-      await setIndexCarparkList(return_list)
-      await setCarparksFound(true) // trigger carparksfound to populate the fields
-      return return_list;
+    
+        Promise.all(promises)
+          .then((results) => {
+            for (const result of results) {
+              if (result) {
+                return_list.push(result);
+              } 
+            }
+            console.log("Data for carparks is ", return_list);
+            setIndexCarparkList(return_list);
+            setCarparksFound(true); // trigger carparksfound to populate the fields
+            carpark_dict = return_list; // trigger parent prop change
+            console.log("shortlisted carparks indexed using google maps api");
+            // update parent
+            carpark_list_change(return_list);
+            resolve(return_list); // Resolve the Promise with the return_list
+          })
+          .catch((error) => {
+            console.error("Error occurred during carpark_info_search:", error);
+            reject(error); // Reject the Promise if an error occurs
+          });
+      });
+      
     }
     
-    async function searchCarparkInfo(this_carpark) {
+    function searchCarparkInfo(this_carpark) {
       return new Promise((resolve, reject) => {
         const request = {
           query: `${this_carpark.coordinates[0]},${this_carpark.coordinates[1]}`,
@@ -195,14 +208,17 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
               label: this_carpark.carparkName,
               location: firstResult.formatted_address,
               image_src: firstResult.photos && firstResult.photos.length > 0 ? firstResult.photos[0].getUrl() : null,
-              position: {lat: target_latitude , lng:target_longitude},
-              color: '#0050E6' // not selected
+              position: { lat: target_latitude, lng: target_longitude },
+              color: '#0050E6', // not selected colour
+              crowd: this_carpark.crowd,
+              distance: this_carpark.distance_from_target,
+              price: this_carpark.dayRate,
+              coordinates: this_carpark.coordinates,
             };
-            console.log("Searched" , this_carpark.carparkName)
-            // resolve(local_relevant)
+            console.log("Searched", this_carpark.carparkName);
             resolve(local_relevant);
           } else {
-            console.log("Failed to search" , this_carpark.carparkName)
+            console.log("Failed to search", this_carpark.carparkName);
             resolve(null); // No results found or an error occurred.
           }
         });
@@ -211,8 +227,9 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     
     
     async function plotNavigationPath() {
+        console.log(chosen_carpark);
         const userLatLng = new window.google.maps.LatLng(user_latitude, user_longitude);
-        const [targetLat, targetLng] = target_coords.split(',').map(coord => parseFloat(coord.trim()));
+        const [targetLat, targetLng] = [chosen_carpark.coordinates[0],chosen_carpark.coordinates[1]]
         const targetLatLng = new window.google.maps.LatLng(targetLat, targetLng);
       
         // Create a DirectionsService object
@@ -252,6 +269,9 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
       function clearNavigationPath() {
         // Set the map property of the DirectionsRenderer to null
         directionsRenderer.setMap(null);
+        //
+        user_marker.splice(1, 1)
+        console.log(user_marker)
       }
 
 

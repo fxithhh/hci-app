@@ -4,8 +4,7 @@ import Drawer from '../components/drawer';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaSearch } from 'react-icons/fa';
-import axios from 'axios'; // Import axios library
-import carparkData from '../assets/carpark_final.json'; // Import carpark data directly
+
 
 
 
@@ -40,7 +39,6 @@ const ParkFinder = () => {
           const { latitude, longitude } = position.coords;
           setUserLatitude(latitude);
           setUserLongitude(longitude);
-          console.log("Carpark Data:",carparkData);
           console.log(`latitude is ${user_latitude}, longitude is ${user_longitude}`);
         },
         (error) => {
@@ -63,14 +61,17 @@ const ParkFinder = () => {
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
-      // The user pressed Enter, do something with the searchText value
-      console.log('Search Text:', searchText);
-      trigger_search.current.findPlaces(); 
+      event.preventDefault();
+      get_search(event)
     }
   };
 
   const handleButtonClick = (event) => {
     event.preventDefault();
+    get_search(event)
+    
+  };
+  const get_search = (event) => {
     console.log(`Search Text: ${searchText}`);
     setSearchText(event.target.value)
     const searchBox = document.getElementById('search_box');
@@ -79,15 +80,23 @@ const ParkFinder = () => {
       trigger_search.current.findPlaces();
       console.log("Children component called")
     }
+  }
+
+  function handlecarparklistChange(newValue)  {
+    setCarparkDict(newValue);
+    console.log("parent updated with carpark dict values" , newValue)
   };
-  
+  function handlesetcarpark(value){
+    setChosenCarpark(value)
+    console.log("Targetted carparked found")
+  }
 
 
   return (
     <div>
       {/* Drawer & Bottom Bar */}
       <div className="fixed bottom-0 w-full z-20">
-        <Drawer user_destination={searchText} navigate_to_place={chosen_carpark}/>
+        <Drawer user_destination={searchText} setchosenCarpark={handlesetcarpark} carpark_list = {carpark_dict} />
       </div>
 
 
@@ -116,7 +125,8 @@ const ParkFinder = () => {
       <ToastContainer />
       {/* This ensures the user coords are available before loading */}
       {isLocationAvailable && (
-        <Map user_latitude={user_latitude} user_longitude={user_longitude} search_text={searchText} carpark_dict = {carpark_dict} chosen_carpark={chosen_carpark} ref = {trigger_search} />
+        <Map user_latitude={user_latitude} user_longitude={user_longitude} search_text={searchText} carpark_dict = {carpark_dict} chosen_carpark={chosen_carpark} 
+        ref = {trigger_search}  carpark_list_change= {handlecarparklistChange}/>
 
       )}
     </div>
