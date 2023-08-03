@@ -353,13 +353,15 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
                                 </div>
                             </div>
 
-                            <div className='mt-6 w-full text-center'>
-                                <button className='bg-brand-green text-white w-full py-2 rounded-lg font-semibold text-lg' 
-                                id="navigate_btn" 
-                                onClick={() => {navigate_to_carpark(); toggleDrawer(anchor, false)}}>
-                                    Navigate
-                                </button>
-                            </div>
+                            <button className='bg-brand-green text-white w-full py-2 rounded-lg font-semibold text-lg' id="navigate_btn" 
+    onClick={(event) => {
+        event.stopPropagation();
+        navigate_to_carpark();
+        toggleDrawer('bottom', false);
+    }}
+>
+    Navigate 
+</button>
 
                         </div>
                     </div>
