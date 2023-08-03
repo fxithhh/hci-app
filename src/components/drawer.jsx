@@ -363,6 +363,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list , trigger_dr
                                                 </p>
                                 </div>
                             </div>
+
                             <div className='mt-6 w-full text-center'>
                                 <button className='bg-brand-green text-white w-full py-2 rounded-lg font-semibold text-lg' 
                                 id="navigate_btn" 
@@ -370,6 +371,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list , trigger_dr
                                     Navigate
                                 </button>
                             </div>
+
                         </div>
                     </div>
 
