@@ -6,6 +6,8 @@ import { renderToString } from 'react-dom/server';
 import { useGoogleMapsLoader } from './googleMapsConfig';
 import axios from 'axios'; // Import axios library
 import carparkData from '../assets/carpark_final.json'; // Import carpark data directly
+import {MarkerF} from '@react-google-maps/api'
+
 
 const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,chosen_carpark,carpark_list_change} ,ref) => {
     const [autocompleteService, setAutocompleteService] = useState(null);
@@ -27,7 +29,6 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     
     // })
     // googleMapsApiKey: "AIzaSyBWvcQDLx5sbyKHzJCx6J3LEmAKVuhUHPI" faith api key
-
     useEffect(() => { 
         if (isLoaded && !loadError && !googleScriptLoaded) {
             setAutocompleteService(new window.google.maps.places.AutocompleteService());
@@ -122,6 +123,20 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     };
 
 
+                // shortlist top 10
+                const shortlist = carparkData.slice(0,10)
+                carpark_info_search(shortlist)
+                
+                
+            } else {
+                // Handle the error or empty results
+                console.log('No results found or an error occurred.');
+                setTargetCoords(null);
+                setTargetRelevantDetails(null);
+            }
+        });
+    };
+
     function get_map_distance(carpark_list,target_location){
       // target_location format as float,float
       // compares all carpark using the distance function and appends it as a new key to each list
@@ -185,7 +200,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
       });
       
     }
-    
+
     function searchCarparkInfo(this_carpark) {
       return new Promise((resolve, reject) => {
         const request = {
@@ -315,18 +330,16 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     // marker styling
     const markers = [
         // User Starting Position
-        // { position: { lat: user_latitude, lng: user_longitude }, color: '#FF9933', label: 'You are here' },// you are here
-        { position: { lat: 1.3433019907805732, lng: 103.96416792617076 }, color: '#0050E6', label: 'SUTD Hostel' }, //sutd hostel
+        { position: { lat: user_latitude, lng: user_longitude }, color: '#FF9933', label: 'You are here' },// you are here
     ];
      
     const onLoad = useCallback(function callback(map) {
-        // This is just an example of getting and using the map instance!!! don't just blindly copy!
-        const bounds = new window.google.maps.LatLngBounds(mapOptions.center);
-        map.fitBounds(bounds);
-        console.log("map loaded")
-        setMap(map)
-    }, [isLoaded])
-
+      const bounds = new window.google.maps.LatLngBounds(mapOptions.center);
+      map.fitBounds(bounds);
+      console.log("map loaded by onLoad")
+      setMap(map)
+  }, [isLoaded])
+ 
     const onUnmount = useCallback(function callback(map) {
         setMap(null)
     }, [])
@@ -337,46 +350,51 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         setSelectedMarker(marker);
     };
 
-    return isLoaded ?(
+    const renderMap = () => {
+      return (
         <GoogleMap
-            mapContainerStyle={containerStyle}
-            options={mapOptions}
-            center = {mapOptions.center}
-            onLoad={onLoad}
-            onUnmount={onUnmount}
-            key = {markers}
+          mapContainerStyle={containerStyle}
+          options={mapOptions}
+          center={mapOptions.center}
+          onLoad={onLoad}
+          onUnmount={onUnmount}
+          key={markers}
         >
-           {markers.map((marker, index) => (
-            <Marker
-            key={index}
-            position={marker.position}
-            onClick={() => handleMarkerClick(marker)}
-            // icon={{
-            //   url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
-            //     renderToString(
-            //       <IconContext.Provider value={{ color: marker.color }}>
-            //         <FaMapMarkerAlt />
-            //       </IconContext.Provider>
-            //     )
-            //   )}`,
-            //   scaledSize: new window.google.maps.Size(35, 35),
-            // }}
-          />
-          // Correct placement of console.log
-          , console.log('Marker Details:', marker)
-        ))}
-      
-      {selectedMarker && (
-        <InfoWindow
-          position={selectedMarker.position}
-          onCloseClick={() => setSelectedMarker(null)}
-        >
-          <div className='font-medium text-brand-dark-blue'>{selectedMarker.label}</div>
-        </InfoWindow>
-      )}
+          {markers.map((marker, index) => {
+            // Correct placement of console.log
+            console.log('MarkerF Details:', marker);
+            return (
+              <MarkerF
+                position={ {lat: user_latitude, lng: user_longitude} }
+                onClick={() => handleMarkerClick(marker)}
+                // icon={{
+                //   url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+                //     renderToString(
+                //       <IconContext.Provider value={{ color: marker.color }}>
+                //         <FaMapMarkerAlt />
+                //       </IconContext.Provider>
+                //     )
+                //   )}`,
+                //   scaledSize: new window.google.maps.Size(35, 35),
+                // }}
+              />
+            );
+          })}
+    
+          {selectedMarker && (
+            <InfoWindow
+              position={selectedMarker.position}
+              onCloseClick={() => setSelectedMarker(null)}
+            >
+              <div className='font-medium text-brand-dark-blue'>
+                {selectedMarker.label}
+              </div>
+            </InfoWindow>
+          )}
         </GoogleMap>
-    ) : <></>;
-
-});
-
+      );
+    };
+    
+    return isLoaded ? renderMap() : null;
+},);
 export default Map;
