@@ -48,6 +48,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
             changecarparkinfo(carpark_list)
             console.log("changed Carpark info as follows:" , carparkInfo)
             setReloadDrawer((prev) => !prev);
+            console.log("Reloading Drawer")
         }
       }, [carpark_list,carparkInfo,user_destination]); //if carpark_list changes, parse it
 

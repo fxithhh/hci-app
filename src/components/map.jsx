@@ -1,5 +1,5 @@
 import { React, useState, useCallback, useEffect , useRef, useImperativeHandle, forwardRef} from 'react'
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow} from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow} from '@react-google-maps/api';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { IconContext } from 'react-icons';
 import { renderToString } from 'react-dom/server';
@@ -344,31 +344,34 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         setSelectedMarker(marker);
     };
 
-    return isLoaded && user_marker ?(
+    return isLoaded ?(
         <GoogleMap
             mapContainerStyle={containerStyle}
             options={mapOptions}
             center = {mapOptions.center}
             onLoad={onLoad}
             onUnmount={onUnmount}
+            key = {user_marker}
         >
            {user_marker.map((marker, index) => (
-        <Marker
-          key={index}
-          position={marker.position}
-          onClick={() => handleMarkerClick(marker)}
-          icon={{
-            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
-              renderToString(
-                <IconContext.Provider value={{ color: marker.color }}>
-                  <FaMapMarkerAlt />
-                </IconContext.Provider>
-              )
-            )}`,
-            scaledSize: new window.google.maps.Size(35, 35),
-          }}
-        />
-      ))}
+            <Marker
+              key={index}
+              position={marker.position}
+              onClick={() => handleMarkerClick(marker)}
+              icon={{
+                url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+                  renderToString(
+                    <IconContext.Provider value={{ color: marker.color }}>
+                      <FaMapMarkerAlt />
+                    </IconContext.Provider>
+                  )
+                )}`,
+                scaledSize: new window.google.maps.Size(35, 35),
+              }}
+            />
+            // Correct placement of console.log
+            , console.log('Marker Details:', marker)
+          ))}
       
       {selectedMarker && (
         <InfoWindow
