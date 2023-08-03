@@ -92,8 +92,8 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     
                 const local_target_coords = `${target_latitude},${target_longitude}`;
                 // Add to the markers if valid
-                user_marker.splice(1,0,{ position: { lat: target_latitude, lng: target_longitude }, color: '#E60000', label: firstResult.name })
-                console.log("user marker is ",user_marker)
+                markers.splice(1,0,{ position: { lat: target_latitude, lng: target_longitude }, color: '#E60000', label: firstResult.name })
+                console.log("user marker is ",markers)
                 setTargetCoords(local_target_coords);
                 const local_relevant = {
                     name: firstResult.name,
@@ -270,8 +270,8 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         // Set the map property of the DirectionsRenderer to null
         directionsRenderer.setMap(null);
         //
-        user_marker.splice(1, 1)
-        console.log(user_marker)
+        markers.splice(1, 1)
+        console.log(markers)
       }
 
 
@@ -309,30 +309,23 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
                     { visibility: 'off' }, // Hide road labels
                 ],
             },
-            // Add more customizations as needed
         ],
     };
 
     // marker styling
-    let user_marker = [
-
+    const markers = [
         // User Starting Position
-        { position: { lat: user_latitude, lng: user_longitude }, color: '#FF9933', label: 'You are here' },// you are here
-        // { position: { lat: 1.3433019907805732, lng: 103.96416792617076 }, color: '#0050E6', label: 'SUTD Hostel' }, //sutd hostel
-
+        // { position: { lat: user_latitude, lng: user_longitude }, color: '#FF9933', label: 'You are here' },// you are here
+        { position: { lat: 1.3433019907805732, lng: 103.96416792617076 }, color: '#0050E6', label: 'SUTD Hostel' }, //sutd hostel
     ];
-    
-    
-
-    
-
+     
     const onLoad = useCallback(function callback(map) {
         // This is just an example of getting and using the map instance!!! don't just blindly copy!
         const bounds = new window.google.maps.LatLngBounds(mapOptions.center);
         map.fitBounds(bounds);
         console.log("map loaded")
         setMap(map)
-    }, [isLoaded,map,user_marker])
+    }, [isLoaded])
 
     const onUnmount = useCallback(function callback(map) {
         setMap(null)
@@ -351,27 +344,27 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
             center = {mapOptions.center}
             onLoad={onLoad}
             onUnmount={onUnmount}
-            key = {user_marker}
+            key = {markers}
         >
-           {user_marker.map((marker, index) => (
+           {markers.map((marker, index) => (
             <Marker
-              key={index}
-              position={marker.position}
-              onClick={() => handleMarkerClick(marker)}
-              icon={{
-                url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
-                  renderToString(
-                    <IconContext.Provider value={{ color: marker.color }}>
-                      <FaMapMarkerAlt />
-                    </IconContext.Provider>
-                  )
-                )}`,
-                scaledSize: new window.google.maps.Size(35, 35),
-              }}
-            />
-            // Correct placement of console.log
-            , console.log('Marker Details:', marker)
-          ))}
+            key={index}
+            position={marker.position}
+            onClick={() => handleMarkerClick(marker)}
+            // icon={{
+            //   url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+            //     renderToString(
+            //       <IconContext.Provider value={{ color: marker.color }}>
+            //         <FaMapMarkerAlt />
+            //       </IconContext.Provider>
+            //     )
+            //   )}`,
+            //   scaledSize: new window.google.maps.Size(35, 35),
+            // }}
+          />
+          // Correct placement of console.log
+          , console.log('Marker Details:', marker)
+        ))}
       
       {selectedMarker && (
         <InfoWindow
