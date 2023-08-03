@@ -9,6 +9,7 @@ import Carpark3 from '../assets/carpark3.jpeg'
 import Carpark4 from '../assets/carpark4.jpeg'
 import Carpark5 from '../assets/carpark5.jpeg'
 import Carpark6 from '../assets/carpark6.jpeg'
+import CarparkDefault from '../assets/Parkfinder.jpg'
 
 // react icons
 import { LiaMapMarkerSolid, LiaWalkingSolid } from "react-icons/lia"
@@ -17,7 +18,7 @@ import { BsPeople, BsFillPinMapFill, BsPersonCircle } from "react-icons/bs"
 import { IoIosArrowBack } from "react-icons/io"
 import { AiOutlineCar } from "react-icons/ai"
 
-const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
+const Drawer = ({user_destination , setchosenCarpark , carpark_list , trigger_drawer ,trigger_drawer_set}) => {
     // data about different carparks
     // crowd: 0-3 empty, 4-6 moderate, 7-9 busy, 9-12 very busy 
     // This is the final display state
@@ -48,8 +49,13 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
             changecarparkinfo(carpark_list)
             console.log("changed Carpark info as follows:" , carparkInfo)
             setReloadDrawer((prev) => !prev);
+            console.log("Reloading Drawer")
         }
-      }, [carpark_list,carparkInfo,user_destination]); //if carpark_list changes, parse it
+        if (trigger_drawer === true ) {
+            toggleDrawer(anchor,true,true)
+            trigger_drawer_set(false) //not in event changes
+        }
+      }, [carpark_list,carparkInfo,user_destination ,trigger_drawer]); //if carpark_list changes, parse it
 
     const [toggle, setToggle] = useState({
         bottom: false,
@@ -80,7 +86,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
 
 
     // toggle open close drawer
-    const toggleDrawer = (anchor, open) => (event) => {
+    const toggleDrawer = (anchor, open , activate) => (event) => {
         console.log("anchor and open", anchor, open)
         if (
             event &&
@@ -91,6 +97,10 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
         }
 
         setToggle({ ...toggle, [anchor]: open });
+        if (activate) {
+            navigate_to_carpark()
+        }
+        
     };
 
     const anchor = 'bottom';
@@ -160,6 +170,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
       };
     const navigate_to_carpark = () =>{
         // perform navigation call to google maps 
+
         setchosenCarpark(selectedCarpark)
     }
 
@@ -167,7 +178,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
         <div>
             {/* Bottom Bar */}
             <div className="bg-brand-dark-blue flex h-full shadow-2xl">
-                <button onClick={toggleDrawer(anchor, true)} className="py-2 w-1/2 flex flex-col items-center justify-center text-gray-300 active:text-white active:bg-brand-blue">
+                <button onClick={toggleDrawer(anchor, true ,false)} className="py-2 w-1/2 flex flex-col items-center justify-center text-gray-300 active:text-white active:bg-brand-blue">
                     <AiOutlineCar className="text-xl" />
                     Parking Options
                 </button>
@@ -181,8 +192,8 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
                 key={reloadDrawer}
                 anchor={anchor}
                 open={toggle[anchor]}
-                onClose={toggleDrawer(anchor, false)}
-                onOpen={toggleDrawer(anchor, true)}
+                onClose={toggleDrawer(anchor, false ,false)}
+                onOpen={toggleDrawer(anchor, true , false)}
                 sx={drawerStyles}
             >
                 {activePage === 'page1' && (
@@ -223,7 +234,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
                                     <div key={index} className="flex py-4 px-8 hover:bg-gray-100 focus:bg-gray-200 border-b-2 border-gray-300" onClick={() => handlePageChange(row.label)} >
                                         <div className="w-2/5 h-28 pr-4">
                                             <img className='w-full h-full object-cover rounded-lg' 
-                                                src={row.image_src!== null ? row.image_src : Carpark1}
+                                                src={row.image_src!== null ? row.image_src : CarparkDefault}
                                                 alt={row.label}
                                                 onError={(e) => console.log('Error loading image:', e)} />
                                         </div>
@@ -293,7 +304,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
 
                         {/* detailed carpark info */}
                         <div className='my-4'>
-                            <img className='rounded-lg h-40 w-full' src={selectedCarpark.image_src !== null ? selectedCarpark.image_src : "../assets/carpark1.jpeg"} alt="Carpark"></img>
+                            <img className='rounded-lg h-40 w-full' src={selectedCarpark.image_src !== null ? selectedCarpark.image_src : CarparkDefault} alt="Carpark"></img>
                             <div>
                                 <h2 className='font-bold text-3xl mt-4 leading-tight'>{selectedCarpark.location}</h2>
                                 <div className='flex items-center mb-2'>
@@ -352,17 +363,13 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
                                                 </p>
                                 </div>
                             </div>
-
-                            <button className='bg-brand-green text-white w-full py-2 rounded-lg font-semibold text-lg' id="navigate_btn" 
-    onClick={(event) => {
-        event.stopPropagation();
-        navigate_to_carpark();
-        toggleDrawer('bottom', false);
-    }}
->
-    Navigate 
-</button>
-
+                            <div className='mt-6 w-full text-center'>
+                                <button className='bg-brand-green text-white w-full py-2 rounded-lg font-semibold text-lg' 
+                                id="navigate_btn" 
+                                onClick={toggleDrawer(anchor,false , true) }>
+                                    Navigate
+                                </button>
+                            </div>
                         </div>
                     </div>
 
