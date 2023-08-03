@@ -29,7 +29,6 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     
     // })
     // googleMapsApiKey: "AIzaSyBWvcQDLx5sbyKHzJCx6J3LEmAKVuhUHPI" faith api key
-
     useEffect(() => { 
         if (isLoaded && !loadError && !googleScriptLoaded) {
             setAutocompleteService(new window.google.maps.places.AutocompleteService());
@@ -124,6 +123,20 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     };
 
 
+                // shortlist top 10
+                const shortlist = carparkData.slice(0,10)
+                carpark_info_search(shortlist)
+                
+                
+            } else {
+                // Handle the error or empty results
+                console.log('No results found or an error occurred.');
+                setTargetCoords(null);
+                setTargetRelevantDetails(null);
+            }
+        });
+    };
+
     function get_map_distance(carpark_list,target_location){
       // target_location format as float,float
       // compares all carpark using the distance function and appends it as a new key to each list
@@ -187,7 +200,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
       });
       
     }
-  
+
     function searchCarparkInfo(this_carpark) {
       return new Promise((resolve, reject) => {
         const request = {
@@ -326,8 +339,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
       console.log("map loaded by onLoad")
       setMap(map)
   }, [isLoaded])
-  
-
+ 
     const onUnmount = useCallback(function callback(map) {
         setMap(null)
     }, [])

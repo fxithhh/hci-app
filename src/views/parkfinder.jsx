@@ -18,7 +18,6 @@ const ParkFinder = () => {
   const [carpark_dict,setCarparkDict] = useState(null) //carpark details of all carparks
   const [chosen_carpark,setChosenCarpark] = useState(null)  //chosen carpark
   const trigger_search = useRef() //trigger navigation
-  const [trigger_drawer , setTriggerDrawer] = useState(false)
 
   useEffect(() => {
     if (warnState) {
@@ -81,7 +80,6 @@ const ParkFinder = () => {
       trigger_search.current.findPlaces();
       console.log("Children component called")
     }
-
   }
 
   function handlecarparklistChange(newValue)  {
@@ -92,16 +90,13 @@ const ParkFinder = () => {
     setChosenCarpark(value)
     console.log("Targetted carparked found")
   }
-  function handletriggerdrawer(value){
-    setTriggerDrawer(value)
-    console.log("Trigger Drawer Reset")
-  }
+
 
   return (
     <div>
       {/* Drawer & Bottom Bar */}
       <div className="fixed bottom-0 w-full z-20">
-        <Drawer user_destination={searchText} setchosenCarpark={handlesetcarpark} carpark_list = {carpark_dict} trigger_drawer={trigger_drawer} trigger_drawer_set = {handletriggerdrawer} />
+        <Drawer user_destination={searchText} setchosenCarpark={handlesetcarpark} carpark_list = {carpark_dict} />
       </div>
 
 
@@ -131,7 +126,7 @@ const ParkFinder = () => {
       {/* This ensures the user coords are available before loading */}
       {isLocationAvailable && (
         <Map user_latitude={user_latitude} user_longitude={user_longitude} search_text={searchText} carpark_dict = {carpark_dict} chosen_carpark={chosen_carpark} 
-        ref = {trigger_search}  carpark_list_change= {handlecarparklistChange} />
+        ref = {trigger_search}  carpark_list_change= {handlecarparklistChange}/>
 
       )}
     </div>
