@@ -147,7 +147,8 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
 
             // Set the selected carpark as the active carpark for Page 2
             setSelectedCarpark(selectedCarpark);
-            console.log("selected carpark from user preferenc is " ,selectedCarpark)
+            setchosenCarpark(selectedCarpark)
+            console.log("selected carpark from user preference is " ,selectedCarpark)
             setActivePage('page2');
         }
     };
@@ -158,10 +159,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
     const toProfile = () => {
         navigate('/profile');  
       };
-    const navigate_to_carpark = () =>{
-        // perform navigation call to google maps 
-        setchosenCarpark(selectedCarpark)
-    }
+    
 
     return (
         <div>

@@ -21,14 +21,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     const [navigation_in_progress , setNavigationInProgress] = useState(false)
     let [directionsRenderer, setDirectionsRenderer] = useState(null)
     let [index_carpark_list , setIndexCarparkList] = useState(null)
-    // API keys
-    // const { isLoaded,loadError } = useJsApiLoader({
-    //     id: 'google-map-script',
-    //     googleMapsApiKey: "AIzaSyAhY1RECYWhzJtChjr0iNIAV5NUFlljv9g",// Kelvin's api for places
-    //     libraries :libraries
     
-    // })
-    // googleMapsApiKey: "AIzaSyBWvcQDLx5sbyKHzJCx6J3LEmAKVuhUHPI" faith api key
     useEffect(() => { 
         if (isLoaded && !loadError && !googleScriptLoaded) {
             setAutocompleteService(new window.google.maps.places.AutocompleteService());
@@ -107,21 +100,6 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
                 get_map_distance(carparkData,local_target_coords)
                 carparkData.sort((a, b) => a.distance_from_target - b.distance_from_target);
                 console.log("Calcuated distance and sorted df" , carparkData)
-
-                // shortlist top 10
-                const shortlist = carparkData.slice(0,10)
-                carpark_info_search(shortlist)
-                
-                
-            } else {
-                // Handle the error or empty results
-                console.log('No results found or an error occurred.');
-                setTargetCoords(null);
-                setTargetRelevantDetails(null);
-            }
-        });
-    };
-
 
                 // shortlist top 10
                 const shortlist = carparkData.slice(0,10)
