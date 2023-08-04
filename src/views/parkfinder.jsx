@@ -18,6 +18,7 @@ const ParkFinder = () => {
   const [carpark_dict,setCarparkDict] = useState(null) //carpark details of all carparks
   const [chosen_carpark,setChosenCarpark] = useState(null)  //chosen carpark
   const trigger_search = useRef() //trigger navigation
+  const [upbar , setUpBar] = useState(false)
 
   useEffect(() => {
     if (warnState) {
@@ -88,6 +89,7 @@ const ParkFinder = () => {
       if (trigger_search.current) {
         trigger_search.current.findPlaces();
         console.log('Children component called');
+        setUpBar(true)
       }
     }
   };
@@ -98,15 +100,17 @@ const ParkFinder = () => {
   };
   function handlesetcarpark(value){
     setChosenCarpark(value)
-    console.log("Targetted carparked found")
+    console.log("Targetted carparked found" , chosen_carpark)
   }
 
-
+  function handleupbar(value){
+    setUpBar(value)
+  }
   return (
     <div>
       {/* Drawer & Bottom Bar */}
       <div className="fixed bottom-0 w-full z-20">
-        <Drawer user_destination={searchText} setchosenCarpark={handlesetcarpark} carpark_list = {carpark_dict} />
+        <Drawer user_destination={searchText} setchosenCarpark={handlesetcarpark} carpark_list = {carpark_dict} upbar = {upbar} resetbar={handleupbar}/>
       </div>
 
 

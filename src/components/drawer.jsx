@@ -17,10 +17,11 @@ import { BsPeople, BsFillPinMapFill, BsPersonCircle } from "react-icons/bs"
 import { IoIosArrowBack } from "react-icons/io"
 import { AiOutlineCar } from "react-icons/ai"
 
-const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
+const Drawer = ({user_destination , setchosenCarpark , carpark_list ,upbar,resetbar}) => {
     // data about different carparks
     // crowd: 0-3 empty, 4-6 moderate, 7-9 busy, 9-12 very busy 
     // This is the final display state
+    
     const [carparkInfo, setCarparkInfo] = useState([
         // { img: Carpark1, name: 'SUTD Hostel', distance: 1.2, price: 3, crowd: "Empty" , image_url: "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAaw_FcKCRl0R1YDPszjG3FTuc8BoV0JWHwBi19Df6Vo23gh1GWlJ4-uqTOgMxS5NfOZFKQyXsg7l26t1uKaZgPxqG7bhf2iNycekxhngCwyXsSwYoPObmKh6srlTB2AikSMr96OHt8scLotEU30Vj2O_GJnvxzP_S4vLrKlojDAj5ylXghgE&3u4032&5m1&2e1&callback=none&key=AIzaSyAhY1RECYWhzJtChjr0iNIAV5NUFlljv9g&token=127467"    },
         // { img: Carpark2, name: 'SUTD Sports and Recreation Centre Carpark', distance: 1, price: 2, crowd: 1 },
@@ -48,7 +49,11 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
             changecarparkinfo(carpark_list)
             setReloadDrawer((prev) => !prev);
         }
-      }, [carpark_list,carparkInfo,user_destination]); //if carpark_list changes, parse it
+        if (upbar == true) {
+            toggleDrawer('bottom', true, false)();
+            resetbar(false)
+        }
+      }, [carpark_list,carparkInfo,upbar]); //if carpark_list changes, parse it
 
     const [toggle, setToggle] = useState({
         bottom: false,
@@ -180,11 +185,16 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
 
             <SwipeableDrawer
                 key={reloadDrawer}
-                anchor={anchor}
-                open={toggle[anchor]}
-                onClose={toggleDrawer(anchor, false)}
-                onOpen={toggleDrawer(anchor, true)}
-                sx={drawerStyles}
+                anchor="bottom"
+                open={toggle.bottom}
+                onClose={toggleDrawer('bottom', false)}
+                onOpen={toggleDrawer('bottom', true)}
+                sx={{
+                    '& .MuiDrawer-paper': {
+                        borderRadius: '25px 25px 0 0',
+                        boxShadow: 'none'
+                    }
+                }}
             >
                 {activePage === 'page1' && (
                     <div className="my-4">
