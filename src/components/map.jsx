@@ -10,7 +10,11 @@ import {MarkerF} from '@react-google-maps/api'
 
 
 const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,chosen_carpark,carpark_list_change} ,ref) => {
-    let mapcenter = {lat: user_latitude , user_longitude}
+    const [mapCenter, setMapCenter] = useState({
+      lat: user_latitude,
+      lng: user_longitude
+    });
+    console.log("map center initialised" ,mapCenter)
     const [autocompleteService, setAutocompleteService] = useState(null);
     const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
     const [map, setMap] = useState(null);
@@ -33,7 +37,6 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
             console.log('Scripts for places api loaded');
           }
         console.log("Updated target_coords:", target_coords);
-        console.log("Updated details" ,  target_relevant_details)
           // target coords is target location, chosen_carpark is the carpark to goto
         if (navigation_in_progress && target_coords != null && chosen_carpark != null) {
             console.log("Clearing preexisting path")
@@ -43,7 +46,6 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         } 
         if (!navigation_in_progress && target_coords!= null && chosen_carpark != null){
             console.log("Initiating Path finding ")
-            plotNavigationPath()
             plotNavigationPath()
         }
             
@@ -93,8 +95,8 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
                 const firstResult = results[0];
                 const target_latitude = firstResult.geometry.location.lat();
                 const target_longitude = firstResult.geometry.location.lng();
-                console.log("Latitude:", target_latitude);
-                console.log("Longitude:", target_longitude);
+                console.log("Target latitude:", target_latitude);
+                console.log("Target longitude:", target_longitude);
     
                 const local_target_coords = {lat: target_latitude, lng: target_longitude}
 
@@ -126,9 +128,14 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
                 // shortlist top 10
                 const shortlist = carparkData.slice(0,10)
                 carpark_info_search(shortlist)
-                mapcenter = {lat: target_latitude,lng: target_longitude}
-                mapOptions = { ...mapOptions, center: mapcenter };
-                
+
+                // recenter
+                setMapCenter({
+                  lat: target_latitude,
+                  lng: target_longitude
+                });
+
+                mapOptions.center = {local_target_coords}
             } else {
                 // Handle the error or empty results
                 console.log('No results found or an error occurred.');
@@ -318,8 +325,8 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     };
     
     let mapOptions = {
-        zoom: 18,
-        center: { lat: user_latitude, lng: user_longitude }, // Kelvin Change to initialise from user position
+        zoom: 15,
+        center: mapCenter, // Kelvin Change to initialise from user position
         mapTypeControl: false,
         styles: [
             {
@@ -346,13 +353,14 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         ],
     };
 
-    
+    const mapRef = useRef(null);
      
     const onLoad = useCallback(function callback(map) {
       const bounds = new window.google.maps.LatLngBounds(mapOptions.center);
       map.fitBounds(bounds);
-      console.log("map loaded by onLoad")
       setMap(map)
+      mapRef.current = map;
+      console.log("maploaded")
   }, [isLoaded])
  
     const onUnmount = useCallback(function callback(map) {
@@ -366,7 +374,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         console.log("clicked",marker)
         setTargetCoords(marker.position)
         chosen_carpark = marker
-        plotNavigationPath()  
+        // plotNavigationPath()  
     };
 
     const renderMap = () => {
@@ -374,14 +382,14 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         <GoogleMap
           mapContainerStyle={containerStyle}
           options={mapOptions}
-          center= {mapOptions.center}
+          center= {mapCenter}
           onLoad={onLoad}
           onUnmount={onUnmount}
-          key={chosen_carpark}
-          
+          key={mapCenter}
         >
           {markers.slice(0,10).map((marker, index) => {
             // Correct placement of console.log
+            console.log("markers are " ,markers)
             return (
               <MarkerF
                 key = {index}
@@ -415,6 +423,6 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
       );
     };
     
-    return isLoaded ? renderMap() : null;
+    return isLoaded && mapCenter!=null ? renderMap() : null;
 },);
 export default Map;
