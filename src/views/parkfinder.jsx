@@ -73,16 +73,27 @@ const ParkFinder = () => {
     
   };
   const get_search = (event) => {
-    console.log(`Search Text: ${searchText}`);
-    setSearchText(event.target.value)
-    const searchBox = document.getElementById('search_box');
-    // Kelvin trigger places search
-    if (trigger_search.current) {
-      trigger_search.current.findPlaces();
-      console.log("Children component called")
-      setUpBar(true)
+    const enteredSearchText = searchText;
+    console.log(`Search Text: ${enteredSearchText}`);
+
+    if (enteredSearchText === '') {
+      // Handle the case when the search text is empty
+      console.log('Error: Search text cannot be empty.');
+      toast.error('Empty Search Box', {
+        position: toast.POSITION.BOTTOM_CENTER, // You can choose the position of the toast notification
+        autoClose: 1000, // The notification will automatically close after 3 seconds
+      })    } else {
+      setSearchText(enteredSearchText);
+      const searchBox = document.getElementById('search_box');
+      // Kelvin trigger places search
+      if (trigger_search.current) {
+        trigger_search.current.findPlaces();
+        console.log('Children component called');
+        setUpBar(true)
+      }
     }
-  }
+  };
+  
 
   function handlecarparklistChange(newValue)  {
     setCarparkDict(newValue);
