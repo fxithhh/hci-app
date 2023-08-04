@@ -10,7 +10,7 @@ import {MarkerF} from '@react-google-maps/api'
 
 
 const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,chosen_carpark,carpark_list_change} ,ref) => {
-  
+    let mapcenter = {lat: user_latitude , user_longitude}
     const [autocompleteService, setAutocompleteService] = useState(null);
     const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
     const [map, setMap] = useState(null);
@@ -34,7 +34,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
           }
         console.log("Updated target_coords:", target_coords);
         console.log("Updated details" ,  target_relevant_details)
-
+          // target coords is target location, chosen_carpark is the carpark to goto
         if (navigation_in_progress && target_coords != null && chosen_carpark != null) {
             console.log("Clearing preexisting path")
             clearNavigationPath()
@@ -43,6 +43,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         } 
         if (!navigation_in_progress && target_coords!= null && chosen_carpark != null){
             console.log("Initiating Path finding ")
+            plotNavigationPath()
             plotNavigationPath()
         }
             
@@ -125,7 +126,8 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
                 // shortlist top 10
                 const shortlist = carparkData.slice(0,10)
                 carpark_info_search(shortlist)
-                
+                mapcenter = {lat: target_latitude,lng: target_longitude}
+                mapOptions = { ...mapOptions, center: mapcenter };
                 
             } else {
                 // Handle the error or empty results
@@ -191,7 +193,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
             // update parent
             const newmarkers = [...markers]
             return_list.forEach((carpark) => {
-              newmarkers.push(carpark);})
+              newmarkers.splice(2,0,carpark);})
 
             setMarkers(newmarkers)
             carpark_list_change(return_list);
@@ -245,7 +247,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     }
     
     
-    async function plotNavigationPath() {
+    function plotNavigationPath() {
         setNavigationInProgress(true)
         console.log("navigating to " , chosen_carpark);
         clearmarkers("carpark")
@@ -263,27 +265,27 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
             directionsRenderer.setMap(map); // Make sure 'map' is the map instance you have in your component
         }
         else{
-          directionsRenderer.setMap(map); // Make sure 'map' is the map instance you have in your component
+           directionsRenderer.setMap(map); // Make sure 'map' is the map instance you have in your component
         }
               
       
         // Create a request object for the DirectionsService
         const request = {
-          origin: userLatLng,
-          destination: targetLatLng,
-          travelMode: window.google.maps.TravelMode.DRIVING, // Specify the travel mode (DRIVING, WALKING, BICYCLING, TRANSIT)
+            origin: userLatLng,
+            destination: targetLatLng,
+            travelMode: window.google.maps.TravelMode.DRIVING, // Specify the travel mode (DRIVING, WALKING, BICYCLING, TRANSIT)
         };
       
         // Call the DirectionsService to calculate the route
         directionsService.route(request, (result, status) => {
-          if (status === window.google.maps.DirectionsStatus.OK) {
-            // Display the route on the map using DirectionsRenderer
-            directionsRenderer.setDirections(result);
-          } else {
-            console.error('Error fetching directions:', status);
-          }
+            if (status === window.google.maps.DirectionsStatus.OK) {
+              // Display the route on the map using DirectionsRenderer
+              directionsRenderer.setDirections(result);
+            } else {
+              console.error('Error fetching directions:', status);
+            }
         });
-      }
+    }
 
     function clearNavigationPath() {
       // Set the map property of the DirectionsRenderer to null
@@ -294,8 +296,11 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
       if (type === "all") {
         console.log("Resetting markers for destination and carpark");
         // Create a new array with only the user marker
-        const newMarkers = markers.slice(0,1)
-        setMarkers(newMarkers);
+        const updatedMarkers = markers
+        updatedMarkers.slice(0,1)
+        // Update the state with the new array
+        setMarkers(updatedMarkers);
+        console.log(markers)
       }
       if (type === "carpark") {
         console.log("Resetting markers");
@@ -312,7 +317,7 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         height: '85vh'
     };
     
-    const mapOptions = {
+    let mapOptions = {
         zoom: 18,
         center: { lat: user_latitude, lng: user_longitude }, // Kelvin Change to initialise from user position
         mapTypeControl: false,
@@ -360,8 +365,8 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         setSelectedMarker(marker);
         console.log("clicked",marker)
         setTargetCoords(marker.position)
-        plotNavigationPath()  
         chosen_carpark = marker
+        plotNavigationPath()  
     };
 
     const renderMap = () => {
@@ -369,13 +374,13 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         <GoogleMap
           mapContainerStyle={containerStyle}
           options={mapOptions}
-          center={mapOptions.center}
+          center= {mapOptions.center}
           onLoad={onLoad}
           onUnmount={onUnmount}
-          key={markers}
+          key={chosen_carpark}
           
         >
-          {markers.map((marker, index) => {
+          {markers.slice(0,10).map((marker, index) => {
             // Correct placement of console.log
             return (
               <MarkerF
