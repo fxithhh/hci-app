@@ -84,7 +84,6 @@ const ParkFinder = () => {
 
   function handlecarparklistChange(newValue)  {
     setCarparkDict(newValue);
-    console.log("parent updated with carpark dict values" , newValue)
   };
   function handlesetcarpark(value){
     setChosenCarpark(value)

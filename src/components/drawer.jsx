@@ -9,7 +9,7 @@ import Carpark3 from '../assets/carpark3.jpeg'
 import Carpark4 from '../assets/carpark4.jpeg'
 import Carpark5 from '../assets/carpark5.jpeg'
 import Carpark6 from '../assets/carpark6.jpeg'
-
+import CarparkDefault from '../assets/carparkdefault.jpg'
 // react icons
 import { LiaMapMarkerSolid, LiaWalkingSolid } from "react-icons/lia"
 import { MdAttachMoney } from "react-icons/md"
@@ -46,7 +46,6 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
         // Code to run when the component mounts (equivalent to componentDidMount)
         if (carpark_list != null){
             changecarparkinfo(carpark_list)
-            console.log("changed Carpark info as follows:" , carparkInfo)
             setReloadDrawer((prev) => !prev);
         }
       }, [carpark_list,carparkInfo,user_destination]); //if carpark_list changes, parse it
@@ -80,7 +79,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
 
 
     // toggle open close drawer
-    const toggleDrawer = (anchor, open) => (event) => {
+    const toggleDrawer = (anchor, open, navigate) => (event) => {
         console.log("anchor and open", anchor, open)
         if (
             event &&
@@ -88,6 +87,10 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
             (event.key === 'Tab' || event.key === 'Shift')
         ) {
             return;
+        }
+        if (navigate===true){
+            console.log("carpark selected")
+            setchosenCarpark(selectedCarpark)
         }
 
         setToggle({ ...toggle, [anchor]: open });
@@ -221,7 +224,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
                                     <div key={index} className="flex py-4 px-8 hover:bg-gray-100 focus:bg-gray-200 border-b-2 border-gray-300" onClick={() => handlePageChange(row.label)} >
                                         <div className="w-2/5 h-28 pr-4">
                                             <img className='w-full h-full object-cover rounded-lg' 
-                                                src={row.image_src!== null ? row.image_src : Carpark1}
+                                                src={row.image_src!== null ? row.image_src : CarparkDefault}
                                                 alt={row.label}
                                                 onError={(e) => console.log('Error loading image:', e)} />
                                         </div>
@@ -291,7 +294,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
 
                         {/* detailed carpark info */}
                         <div className='my-4'>
-                            <img className='rounded-lg h-40 w-full' src={selectedCarpark.image_src !== null ? selectedCarpark.image_src : "../assets/carpark1.jpeg"} alt="Carpark"></img>
+                            <img className='rounded-lg h-40 w-full' src={selectedCarpark.image_src !== null ? selectedCarpark.image_src : CarparkDefault} alt="Carpark"></img>
                             <div>
                                 <h2 className='font-bold text-3xl mt-4 leading-tight'>{selectedCarpark.location}</h2>
                                 <div className='flex items-center mb-2'>
@@ -354,7 +357,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list}) => {
                             <div className='mt-6 w-full text-center'>
                                 <button className='bg-brand-green text-white w-full py-2 rounded-lg font-semibold text-lg' 
                                 id="navigate_btn" 
-                                onClick={toggleDrawer(anchor,false , true) }>
+                                onClick={toggleDrawer(anchor, false, true)}>
                                     Navigate
                                 </button>
                             </div>
