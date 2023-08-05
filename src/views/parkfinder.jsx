@@ -106,6 +106,9 @@ const ParkFinder = () => {
   function handleupbar(value){
     setUpBar(value)
   }
+  function handlechosencarparkchange(value){
+    setChosenCarpark(value)
+  }
   return (
     <div>
       {/* Drawer & Bottom Bar */}
@@ -139,7 +142,8 @@ const ParkFinder = () => {
       <ToastContainer />
       {/* This ensures the user coords are available before loading */}
       {isLocationAvailable && (
-        <Map user_latitude={user_latitude} user_longitude={user_longitude} search_text={searchText} carpark_dict = {carpark_dict} chosen_carpark={chosen_carpark} 
+        <Map user_latitude={user_latitude} user_longitude={user_longitude} search_text={searchText} carpark_dict = {carpark_dict} 
+        setChosenCarpark = {handlechosencarparkchange}chosen_carpark={chosen_carpark} 
         ref = {trigger_search}  carpark_list_change= {handlecarparklistChange}/>
 
       )}

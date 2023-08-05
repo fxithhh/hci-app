@@ -49,10 +49,11 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list ,upbar,reset
             changecarparkinfo(carpark_list)
             setReloadDrawer((prev) => !prev);
         }
-        if (upbar == true) {
-            toggleDrawer('bottom', true, false)();
-            resetbar(false)
-        }
+        // no triggering of bar
+        // if (upbar == true) {
+        //     toggleDrawer('bottom', true, false)();
+        //     resetbar(false)
+        // }
       }, [carpark_list,carparkInfo,upbar]); //if carpark_list changes, parse it
 
     const [toggle, setToggle] = useState({

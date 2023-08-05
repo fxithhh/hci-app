@@ -9,7 +9,7 @@ import carparkData from '../assets/carpark_final.json'; // Import carpark data d
 import {MarkerF} from '@react-google-maps/api'
 
 
-const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,chosen_carpark,carpark_list_change} ,ref) => {
+const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,setChosenCarpark,chosen_carpark,carpark_list_change} ,ref) => {
     const [mapCenter, setMapCenter] = useState({
       lat: user_latitude,
       lng: user_longitude
@@ -371,11 +371,15 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     
     const handleMarkerClick = (marker) => {
         setSelectedMarker(marker);
-        console.log("clicked",marker)
-        setTargetCoords(marker.position)
-        chosen_carpark = marker
+        setChosenCarpark(marker)
+        console.log("marker selected carpark",chosen_carpark)
         // plotNavigationPath()  
     };
+
+    function selected_marker_navigation(){
+      // only happens when selected
+      plotNavigationPath()
+    }
 
     const renderMap = () => {
       return (
@@ -389,7 +393,6 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
         >
           {markers.slice(0,10).map((marker, index) => {
             // Correct placement of console.log
-            console.log("markers are " ,markers)
             return (
               <MarkerF
                 key = {index}
@@ -405,20 +408,26 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
                   )}`,
                   scaledSize: new window.google.maps.Size(35, 35),
                 }}
-              />
+              />              
             );
           })}
     
-          {selectedMarker && (
-            <InfoWindow
-              position={selectedMarker.position}
-              onCloseClick={() => setSelectedMarker(null)}
-            >
-              <div className='font-medium text-brand-dark-blue'>
-                {selectedMarker.label}
-              </div>
-            </InfoWindow>
-          )}
+        {selectedMarker && (
+          <InfoWindow
+            position={selectedMarker.position}
+            onCloseClick={() => setSelectedMarker(null)}
+          >
+            <div className='font-medium text-brand-dark-blue'>
+              <p>{selectedMarker.label}</p>
+              <p>
+                Walking Time: {(selectedMarker.distance * 10).toFixed(0)} mins
+              </p>
+              <p>Price: ${selectedMarker.price}</p>
+              <p>Crowd: {selectedMarker.crowd}</p>
+          
+            </div>
+          </InfoWindow>
+        )}
         </GoogleMap>
       );
     };
