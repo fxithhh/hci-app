@@ -371,9 +371,8 @@ const Map = forwardRef(({user_latitude,user_longitude,search_text ,carpark_dict,
     
     const handleMarkerClick = (marker) => {
         setSelectedMarker(marker);
-        console.log("clicked",marker)
-        setTargetCoords(marker.position)
         chosen_carpark = marker
+        console.log("marker selected carpark",chosen_carpark)
         // plotNavigationPath()  
     };
 

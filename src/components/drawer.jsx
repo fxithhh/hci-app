@@ -1,14 +1,7 @@
 import { React, useState, useEffect } from 'react';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import { useNavigate } from 'react-router-dom';
-
 // images
-import Carpark1 from '../assets/carpark1.jpeg'
-import Carpark2 from '../assets/carpark2.jpeg'
-import Carpark3 from '../assets/carpark3.jpeg'
-import Carpark4 from '../assets/carpark4.jpeg'
-import Carpark5 from '../assets/carpark5.jpeg'
-import Carpark6 from '../assets/carpark6.jpeg'
 import CarparkDefault from '../assets/carparkdefault.jpg'
 // react icons
 import { LiaMapMarkerSolid, LiaWalkingSolid } from "react-icons/lia"
@@ -18,10 +11,8 @@ import { IoIosArrowBack } from "react-icons/io"
 import { AiOutlineCar } from "react-icons/ai"
 
 const Drawer = ({user_destination , setchosenCarpark , carpark_list ,upbar,resetbar}) => {
-    // data about different carparks
-    // crowd: 0-3 empty, 4-6 moderate, 7-9 busy, 9-12 very busy 
-    // This is the final display state
-    
+
+    const [selectedsort, setSelectedSort] = useState("Recommended");
     const [carparkInfo, setCarparkInfo] = useState([
         // { img: Carpark1, name: 'SUTD Hostel', distance: 1.2, price: 3, crowd: "Empty" , image_url: "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAaw_FcKCRl0R1YDPszjG3FTuc8BoV0JWHwBi19Df6Vo23gh1GWlJ4-uqTOgMxS5NfOZFKQyXsg7l26t1uKaZgPxqG7bhf2iNycekxhngCwyXsSwYoPObmKh6srlTB2AikSMr96OHt8scLotEU30Vj2O_GJnvxzP_S4vLrKlojDAj5ylXghgE&3u4032&5m1&2e1&callback=none&key=AIzaSyAhY1RECYWhzJtChjr0iNIAV5NUFlljv9g&token=127467"    },
         // { img: Carpark2, name: 'SUTD Sports and Recreation Centre Carpark', distance: 1, price: 2, crowd: 1 },
@@ -33,26 +24,35 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list ,upbar,reset
 
     // default state input from jia sheng
     // [{name: "" , distance: int , price: int, crowd: str}]
+    const [checkifnewlist, setCheckIfNewList] = useState(false);
     let originalCarparkInfo = [
-        { img: Carpark1, name: 'SUTD Hostel', distance: 1.2, price: 3, crowd: 10 },
-        { img: Carpark2, name: 'SUTD Sports and Recreation Centre Carpark', distance: 1, price: 2, crowd: 1 },
-        { img: Carpark3, name: 'SUTD Running Track', distance: 2.1, price: 1.5, crowd: 5 },
-        { img: Carpark4, name: 'Changi Court', distance: 1.2, price: 3, crowd: 10 },
-        { img: Carpark5, name: 'Changi City Point', distance: 2, price: 4, crowd: 12 },
-        { img: Carpark6, name: 'Singapore University of Technology & Design', distance: 0, price: 3, crowd: 8 },
+        // { img: Carpark1, name: 'SUTD Hostel', distance: 1.2, price: 3, crowd: 10 },
+        // { img: Carpark2, name: 'SUTD Sports and Recreation Centre Carpark', distance: 1, price: 2, crowd: 1 },
+        // { img: Carpark3, name: 'SUTD Running Track', distance: 2.1, price: 1.5, crowd: 5 },
+        // { img: Carpark4, name: 'Changi Court', distance: 1.2, price: 3, crowd: 10 },
+        // { img: Carpark5, name: 'Changi City Point', distance: 2, price: 4, crowd: 12 },
+        // { img: Carpark6, name: 'Singapore University of Technology & Design', distance: 0, price: 3, crowd: 8 },
     ];
     const [reloadDrawer, setReloadDrawer] = useState(false)
     // toggle state
     useEffect(() => {
-        // Code to run when the component mounts (equivalent to componentDidMount)
-        if (carpark_list != null){
-            changecarparkinfo(carpark_list)
-            setReloadDrawer((prev) => !prev);
-        }
         if (upbar == true) {
+            setCheckIfNewList(false) // this only triggers if a new search
             toggleDrawer('bottom', true, false)();
             resetbar(false)
+            console.log("setting new carparks due to new search")
         }
+        // Code to run when the component mounts (equivalent to componentDidMount)
+        if (carpark_list != null && checkifnewlist === false ){
+            // if i update the carpark then i dont touch the list anymore 
+            setCheckIfNewList(true)
+            
+            changecarparkinfo(carpark_list)
+            originalCarparkInfo  = carpark_list
+            setReloadDrawer((prev) => !prev);
+            console.log("setting new carparks")
+        }
+       
       }, [carpark_list,carparkInfo,upbar]); //if carpark_list changes, parse it
 
     const [toggle, setToggle] = useState({
@@ -119,12 +119,40 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list ,upbar,reset
 
     // sorting
     const handleSort = (property) => {
-        if (property === 'default') {
+        if (property === 'Recommended') {
             setCarparkInfo(originalCarparkInfo);
+            console.log(carparkInfo)
+            setReloadDrawer((prev) => !prev);
         } else {
+            if (property === "crowd") {
+                console.log("Sorting based on crowd");
+    
+                // Define a custom sorting order based on crowd levels
+                const crowdOrder = {
+                    "Empty": 1,
+                    "Moderate": 2,
+                    "Very Busy": 3,
+                };
+    
+                const sortedCarparkInfo = [...carparkInfo];
+                sortedCarparkInfo.sort((a, b) => {
+                    const crowdLevelA = crowdOrder[a[property]];
+                    const crowdLevelB = crowdOrder[b[property]];
+    
+                    return crowdLevelA - crowdLevelB;
+                });
+    
+                setCarparkInfo(sortedCarparkInfo);
+                setReloadDrawer((prev) => !prev);
+            }
+            else{
+            console.log("Sorting based on, " , property)
             const sortedCarparkInfo = [...carparkInfo];
             sortedCarparkInfo.sort((a, b) => a[property] - b[property]);
             setCarparkInfo(sortedCarparkInfo);
+            console.log(carparkInfo)
+            setReloadDrawer((prev) => !prev);
+            }
         }
     };
 
@@ -184,7 +212,7 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list ,upbar,reset
             </div>
 
             <SwipeableDrawer
-                key={reloadDrawer}
+                key={carparkInfo}
                 anchor="bottom"
                 open={toggle.bottom}
                 onClose={toggleDrawer('bottom', false)}
@@ -214,7 +242,12 @@ const Drawer = ({user_destination , setchosenCarpark , carpark_list ,upbar,reset
                         <div className=' my-4'>
                             <h4 className='mx-8 text-lg font-semibold text-brand-green'>Your Parking Options</h4>
                             <label className='ml-8 font-semibold text-brand-dark-blue'>Filter By:</label>
-                            <select className='mt-2 mb-4 ml-2  bg-white border border border-brand-blue rounded-sm px-3 py-2 text-md  text-brand-dark-blue focus:outline-none focus:border-brand-blue' onChange={(e) => handleSort(e.target.value)}>
+                            <select className='mt-2 mb-4 ml-2  bg-white border border border-brand-blue rounded-sm px-3 py-2 text-md  text-brand-dark-blue focus:outline-none focus:border-brand-blue' 
+                                value = {selectedsort}
+                                onChange={(e) => {
+                                    setSelectedSort(e.target.value);
+                                    handleSort(e.target.value); // Call your sorting function here
+                                  }}>
                                 <option value="default">
                                     Recommended
                                 </option>
