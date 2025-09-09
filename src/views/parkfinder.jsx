@@ -106,6 +106,17 @@ const ParkFinder = () => {
   function handleupbar(value){
     setUpBar(value)
   }
+
+  // toast.error('Your chosen carpark is getting crowded!', {
+  //   position: toast.POSITION.BOTTOM_RIGHT,
+  //   autoClose: 5000,
+  //   hideProgressBar: false,
+  //   closeOnClick: true,
+  //   pauseOnHover: true,
+  //   draggable: true,
+  //   progress: undefined,
+  // });
+
   return (
     <div>
       {/* Drawer & Bottom Bar */}
